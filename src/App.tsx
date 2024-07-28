@@ -1,25 +1,30 @@
-import { createWeb3Modal } from "@web3modal/wagmi/react";
+import { useState, useEffect } from "react";
+import { useWalletInfo, createWeb3Modal } from "@web3modal/wagmi/react";
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
-
-import { WagmiProvider } from "wagmi";
-import { arbitrum, mainnet } from "wagmi/chains";
+import { WagmiProvider, useAccount } from "wagmi";
+import { arbitrum, mainnet, polygonAmoy, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// Component 不曉得為什麼畫面會卡死 預計棄用
+// import Component from "./composables/useEthers";
 
 // 0. Setup queryClient
 const queryClient = new QueryClient();
 
 // 1. Get projectId from https://cloud.walletconnect.com
-const projectId = "YOUR_PROJECT_ID";
+const projectId = process.env.REACT_APP_PROJECT_ID as string;
+if (!projectId) {
+  throw new Error("Please Provide project ID");
+}
 
 // 2. Create wagmiConfig
 const metadata = {
-  name: "Web3Modal",
+  name: "My Awesome Dapp",
   description: "Web3Modal Example",
   url: "https://web3modal.com", // origin must match your domain & subdomain
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 
-const chains = [mainnet, arbitrum] as const;
+const chains = [mainnet, arbitrum, polygonAmoy, sepolia] as const;
 const config = defaultWagmiConfig({
   chains,
   projectId,
@@ -31,12 +36,30 @@ createWeb3Modal({
   wagmiConfig: config,
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
+  themeMode: "light",
 });
 
 export default function App({}) {
+  const { walletInfo } = useWalletInfo();
+  const [willReload, setWillReload] = useState(false);
+
+  // 1. polygon amoy: 80002 networkID
+  // 2. sepolia: 11155111
+
+  function GameStart() {
+    return (
+      <>
+        {/* 這邊不能直接做close，不曉得是不是官方那邊壞掉，chrome會檔 */}
+        <p>已經連線 </p>
+      </>
+    );
+  }
+
   return (
     <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>123</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {walletInfo ? <GameStart /> : <w3m-button />}
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }
