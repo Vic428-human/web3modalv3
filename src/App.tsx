@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
-import { useWalletInfo, createWeb3Modal } from "@web3modal/wagmi/react";
+import { createWeb3Modal, useWeb3ModalState } from "@web3modal/wagmi/react";
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
 import { WagmiProvider, useAccount } from "wagmi";
-import { arbitrum, mainnet, polygonAmoy, sepolia } from "wagmi/chains";
+import {
+  arbitrum,
+  mainnet,
+  polygonAmoy,
+  ancient8Sepolia,
+  holesky,
+} from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Component 不曉得為什麼畫面會卡死 預計棄用
 // import Component from "./composables/useEthers";
@@ -24,11 +30,18 @@ const metadata = {
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 
-const chains = [mainnet, arbitrum, polygonAmoy, sepolia] as const;
+const chains = [
+  mainnet,
+  arbitrum,
+  polygonAmoy,
+  ancient8Sepolia,
+  holesky,
+] as const;
 const config = defaultWagmiConfig({
   chains,
   projectId,
   metadata,
+  enableWalletConnect: true,
 });
 
 // 3. Create modal
@@ -40,17 +53,16 @@ createWeb3Modal({
 });
 
 export default function App({}) {
-  const { walletInfo } = useWalletInfo();
-  const [willReload, setWillReload] = useState(false);
-
   // 1. polygon amoy: 80002 networkID
   // 2. sepolia: 11155111
+  const web3State = useWeb3ModalState();
 
   function GameStart() {
     return (
       <>
         {/* 這邊不能直接做close，不曉得是不是官方那邊壞掉，chrome會檔 */}
-        <p>已經連線 </p>
+        {/* <p>已經連線 </p> */}
+        <w3m-button />
       </>
     );
   }
@@ -58,7 +70,7 @@ export default function App({}) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        {walletInfo ? <GameStart /> : <w3m-button />}
+        {web3State.selectedNetworkId ? <GameStart /> : <w3m-button />}
       </QueryClientProvider>
     </WagmiProvider>
   );
