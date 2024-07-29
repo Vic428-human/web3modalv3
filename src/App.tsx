@@ -10,8 +10,7 @@ import {
   holesky,
 } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// Component 不曉得為什麼畫面會卡死 預計棄用
-// import Component from "./composables/useEthers";
+// import { useWallet } from "./hooks/useWallet";
 
 // 0. Setup queryClient
 const queryClient = new QueryClient();
@@ -50,6 +49,12 @@ createWeb3Modal({
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
   themeMode: "light",
+  allWallets: "SHOW",
+  featuredWalletIds: [
+    "1ae92b26df02f0abca6304df07debccd18262fdf5fe82daa81593582dac9a369",
+    "b642ab6de0fe5c7d1e4a2b2821c9c807a81d0f6fd42ee3a75e513ea16e91151c",
+    "42d72b6b34411dfacdf5364c027979908f971fc60251a817622b7bdb44a03106",
+  ],
 });
 
 export default function App({}) {
@@ -60,8 +65,7 @@ export default function App({}) {
   function GameStart() {
     return (
       <>
-        {/* 這邊不能直接做close，不曉得是不是官方那邊壞掉，chrome會檔 */}
-        {/* <p>已經連線 </p> */}
+        {/* <button onClick={handlePublishProposalClick}></button> */}
         <w3m-button />
       </>
     );
@@ -75,3 +79,29 @@ export default function App({}) {
     </WagmiProvider>
   );
 }
+
+export interface IUseWallet {
+  connectorName: string;
+  isConnected: boolean;
+  status: "connecting" | "reconnecting" | "connected" | "disconnected";
+  address: string | null;
+  chainId: number;
+}
+export const useWallet = (): IUseWallet => {
+  const {
+    address,
+    status: wagmiStatus,
+    isConnected,
+    connector,
+    chain,
+  } = useAccount();
+  const chainId = chain?.id || 0;
+
+  return {
+    connectorName: connector?.name || "",
+    isConnected,
+    status: wagmiStatus,
+    address: address as string,
+    chainId,
+  };
+};
